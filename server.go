@@ -98,41 +98,84 @@ func handshake(bufConn *bufio.Reader) (ctx requestCTX, err error) {
 	ctx.Username = username
 	ctx.Hex = hex
 
-	request, err := readCRLF(bufConn)
+	udp, err := bufConn.ReadByte()
 	if err != nil {
-		return ctx, err
+		return ctx, errors.New("request too short")
 	}
-	if len(request) <= 2 {
+	if udp == 0x03 {
+		ctx.UDP = true
+	}
+	atype, err := bufConn.ReadByte()
+	if err != nil {
 		return ctx, errors.New("request too short")
 	}
 
-	if request[0] == 0x03 {
-		ctx.UDP = true
-	}
-
-	switch request[1] {
+	var buf [300]byte
+	switch atype {
 	case 0x01:
-		if len(request) < 8 {
+		n, err := bufConn.Read(buf[:8])
+		if err != nil || n != 8{
 			return ctx, errors.New("parse IPv4 error")
 		}
-		ctx.Host = net.IPv4(request[2], request[3], request[4], request[5]).String()
-		ctx.Port = strconv.Itoa(int(request[6])*256 + int(request[7]))
+		ctx.Host = net.IPv4(buf[0], buf[1], buf[2], buf[3]).String()
+		ctx.Port = strconv.Itoa(int(buf[4])*256 + int(buf[5]))
 	case 0x03:
-		nd := int(request[2])
-		if len(request) < 5+nd {
+		nd, err := bufConn.ReadByte()
+		if err != nil {
 			return ctx, errors.New("parse domain error")
 		}
-		ctx.Host = string(request[3 : 3+nd])
-		ctx.Port = strconv.Itoa(int(request[3+nd])*256 + int(request[4+nd]))
+		ndl := int(nd)
+		n, err := bufConn.Read(buf[:ndl+4])
+		if err != nil || n != ndl+4{
+			return ctx, errors.New("parse domain error")
+		}
+		ctx.Host = string(buf[:ndl])
+		ctx.Port = strconv.Itoa(int(buf[ndl])*256 + int(buf[ndl+1]))
 	case 0x04:
-		if len(request) < 20 {
+		n, err := bufConn.Read(buf[:20])
+		if err != nil || n != 20{
 			return ctx, errors.New("parse IPv6 error")
 		}
-		ctx.Host = net.IP(request[2:18]).String()
-		ctx.Port = strconv.Itoa(int(request[18])*256 + int(request[19]))
+		ctx.Host = net.IP(buf[:16]).String()
+		ctx.Port = strconv.Itoa(int(buf[16])*256 + int(buf[17]))
 	default:
 		return ctx, errors.New("invalid address type")
 	}
+	// request, err := readCRLF(bufConn)
+	// if err != nil {
+	// 	return ctx, err
+	// }
+	// if len(request) <= 2 {
+	// 	return ctx, errors.New("request too short")
+	// }
+
+	// if request[0] == 0x03 {
+	// 	ctx.UDP = true
+	// }
+
+	// switch request[1] {
+	// case 0x01:
+	// 	if len(request) < 8 {
+	// 		return ctx, errors.New("parse IPv4 error")
+	// 	}
+	// 	ctx.Host = net.IPv4(request[2], request[3], request[4], request[5]).String()
+	// 	ctx.Port = strconv.Itoa(int(request[6])*256 + int(request[7]))
+	// case 0x03:
+	// 	nd := int(request[2])
+	// 	if len(request) < 5+nd {
+	// 		return ctx, errors.New("parse domain error")
+	// 	}
+	// 	ctx.Host = string(request[3 : 3+nd])
+	// 	ctx.Port = strconv.Itoa(int(request[3+nd])*256 + int(request[4+nd]))
+	// case 0x04:
+	// 	if len(request) < 20 {
+	// 		return ctx, errors.New("parse IPv6 error")
+	// 	}
+	// 	ctx.Host = net.IP(request[2:18]).String()
+	// 	ctx.Port = strconv.Itoa(int(request[18])*256 + int(request[19]))
+	// default:
+	// 	return ctx, errors.New("invalid address type")
+	// }
 
 	if !checkRules(ctx) {
 		msg := fmt.Sprintf("[rule] ACL check not passed: [%v] %v:%v is not allowed", ctx.Username, ctx.Host, ctx.Port)
@@ -206,10 +249,8 @@ func handlePanel(inbound net.Conn, ctx requestCTX) {
 		}
 		msg += fmt.Sprintf("(%v/%v)", usage, quota)
 	}
-	msg = "HTTP/1.1 200 OK\r\nContent-Length:"+strconv.Itoa(len(msg))+"\r\n\r\n" + msg
-	debug(msg)
-	_, err := inbound.Write([]byte(msg))
-	debug(err)
+	msg = "HTTP/1.1 200 OK\r\nContent-Length:" + strconv.Itoa(len(msg)) + "\r\n\r\n" + msg
+	inbound.Write([]byte(msg))
 }
 
 func formatUsage(usage int64) string {
