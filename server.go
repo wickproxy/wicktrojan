@@ -130,8 +130,8 @@ func handshake(bufConn *bufio.Reader) (ctx requestCTX, err error) {
 		return ctx, errors.New("invalid address type")
 	}
 
-	if !ruleCheck(ctx) {
-		msg := fmt.Sprintf("ACL check not passed: %v is not allowed", ctx)
+	if !checkRules(ctx) {
+		msg := fmt.Sprintf("[rule] ACL check not passed: [%v] %v:%v is not allowed", ctx.Username, ctx.Host, ctx.Port)
 		return ctx, errors.New(msg)
 	}
 	return

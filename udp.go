@@ -23,25 +23,29 @@ func handleUDP(inbound net.Conn, bufConn *bufio.Reader, ctx *requestCTX) {
 		buf = buf[0:cap(buf)]
 		for {
 			outbound.SetReadDeadline(time.Now().Add(udpTimeout))
-			n, remoteAddr,rerr := outbound.ReadFromUDP(buf)
+			n, remoteAddr, rerr := outbound.ReadFromUDP(buf)
 			outbound.SetReadDeadline(time.Time{})
 			hostport := remoteAddr.String()
 			host, port, aerr := net.SplitHostPort(hostport)
 			if aerr != nil {
+				info("[udp]", aerr)
 				break
 			}
 			if n > 0 {
 				data, werr := packageUDP(buf[:n], host, port)
 				if werr != nil {
+					info("[udp]", werr)
 					break
 				}
 				nw, werr := inbound.Write(data)
 				if werr != nil {
+					info("[udp]", werr)
 					break
 				}
 				usage += int64(nw)
 			}
 			if rerr != nil {
+				info("[udp]", rerr)
 				break
 			}
 		}
@@ -55,13 +59,15 @@ func handleUDP(inbound net.Conn, bufConn *bufio.Reader, ctx *requestCTX) {
 	buf = buf[0:cap(buf)]
 	for {
 		inbound.SetReadDeadline(time.Now().Add(udpTimeout))
-		payload, remoteAddr, rerr := unpackageUDP(bufConn)
+		payload, remoteAddr, rerr := unpackageUDP(bufConn, *ctx)
 		inbound.SetReadDeadline(time.Time{})
 		if rerr != nil {
+			info("[udp]", rerr)
 			break
 		}
 		nw, err := outbound.WriteToUDP(payload, remoteAddr)
 		if err != nil {
+			info("[udp]", err)
 			break
 		}
 		usage += int64(nw)
@@ -100,10 +106,10 @@ func packageUDP(payload []byte, host, port string) ([]byte, error) {
 	return append(data, payload...), nil
 }
 
-func unpackageUDP(bufConn *bufio.Reader) (payload []byte,remoteUDPAddr *net.UDPAddr, err error) {
+func unpackageUDP(bufConn *bufio.Reader, ctx requestCTX) (payload []byte, remoteUDPAddr *net.UDPAddr, err error) {
 	request, err := readCRLF(bufConn)
 	if err != nil {
-		return payload,nil, err
+		return payload, nil, err
 	}
 
 	var reqhost, reqport string
@@ -111,7 +117,7 @@ func unpackageUDP(bufConn *bufio.Reader) (payload []byte,remoteUDPAddr *net.UDPA
 	switch request[0] {
 	case 0x01:
 		if len(request) < 9 {
-			return payload,nil, errors.New("parse IPv4 error")
+			return payload, nil, errors.New("parse IPv4 error")
 		}
 		reqhost = net.IPv4(request[1], request[2], request[3], request[4]).String()
 		reqport = strconv.Itoa(int(request[5])*256 + int(request[6]))
@@ -119,29 +125,40 @@ func unpackageUDP(bufConn *bufio.Reader) (payload []byte,remoteUDPAddr *net.UDPA
 	case 0x03:
 		nd := int(request[1])
 		if len(request) < 6+nd {
-			return payload,nil, errors.New("parse domain error")
+			return payload, nil, errors.New("parse domain error")
 		}
 		reqhost = string(request[2 : 2+nd])
 		reqport = strconv.Itoa(int(request[2+nd])*256 + int(request[3+nd]))
 		reqlen = int(request[4+nd])*256 + int(request[5+nd])
 	case 0x04:
 		if len(request) < 21 {
-			return payload,nil, errors.New("parse IPv6 error")
+			return payload, nil, errors.New("parse IPv6 error")
 		}
 		reqhost = net.IP(request[1:17]).String()
 		reqport = strconv.Itoa(int(request[17])*256 + int(request[18]))
 		reqlen = int(request[19])*256 + int(request[20])
 	default:
-		return payload,nil, errors.New("udp address type invalid")
+		return payload, nil, errors.New("udp address type invalid")
+	}
+
+	tmpCTX := requestCTX{
+		Username: ctx.Username,
+		Host:     reqhost,
+		Port:     reqport,
+		UDP:      true,
+	}
+	debug(tmpCTX)
+	if !checkRules(tmpCTX) {
+		return payload, nil, errors.New("request is not allowed")
 	}
 
 	var data [65536]byte
 	nr, err := bufConn.Read(data[:reqlen])
 	if err != nil {
-		return payload,nil, err
+		return payload, nil, err
 	}
 	if nr != reqlen {
-		return payload,nil, errors.New("unmatch payload size")
+		return payload, nil, errors.New("unmatch payload size")
 	}
 
 	remoteUDPAddr, err = net.ResolveUDPAddr("udp", net.JoinHostPort(reqhost, reqport))

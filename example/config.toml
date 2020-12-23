@@ -3,12 +3,6 @@ listen = "127.0.0.1:6666"
 # fallback remote address
 fallback = "127.0.0.1:80"
 
-rules = [
-    "!private",
-    "!www.baidu.com",
-    "!:53"
-]
-
 [TLS]
 # certificate and private key files, leave empty and tls will not be enabled
 certificate = "build/localhost+2.pem"
@@ -27,5 +21,29 @@ quota = 100
 [[users]]
 username = "user2"
 password = "password2"
-# usage limitation (GB)
 quota = 1
+
+[[rules]]
+# disallow private IP addresses
+domain = "private"
+allow = false
+
+[[rules]]
+# allow baidu
+domain = "baidu"
+allow = true
+
+[[rules]]
+# UDP rules, allow 8.8.8.8
+UDP = true
+ip = "8.8.8.8"
+allow = true
+
+[[rules]]
+# UDP rules, do not allow udp
+UDP = true
+allow = false
+
+[[rules]]
+# last rule, allow requests left
+allow = true

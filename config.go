@@ -11,8 +11,6 @@ type configPrototype struct {
 	Fallback  string
 	PanelHost string
 
-	Rules []string
-
 	TLS struct {
 		Certificate string
 		PrivateKey  string
@@ -26,6 +24,18 @@ type configPrototype struct {
 		Password string
 		Quota    int64
 	}
+
+	Rules []rulePrototype
+}
+
+type rulePrototype struct {
+	UDP      bool
+	Username string
+	Domain   string
+	IP       string
+	CIDR     string
+	Port     string
+	Allow    bool
 }
 
 func loadConfig() {
