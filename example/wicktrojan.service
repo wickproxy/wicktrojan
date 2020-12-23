@@ -1,0 +1,13 @@
+[Unit]
+Description=Wicktrojan
+After=network.target network-online.target
+
+[Service]
+Type=simple
+LimitNOFILE=102400
+ExecStart=/usr/local/bin/wicktrojan -debug -config /usr/local/etc/wicktrojan/config.toml -usage /usr/local/etc/wicktrojan/usage.db
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
