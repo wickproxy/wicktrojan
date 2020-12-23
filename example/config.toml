@@ -1,0 +1,31 @@
+# listen address
+listen = "127.0.0.1:6666"
+# fallback remote address
+fallback = "127.0.0.1:80"
+
+rules = [
+    "!private",
+    "!www.baidu.com",
+    "!:53"
+]
+
+[TLS]
+# certificate and private key files, leave empty and tls will not be enabled
+certificate = "build/localhost+2.pem"
+privatekey = "build/localhost+2-key.pem"
+# if issuehost is not empty, wickproxy will try to issue a certificate from Let's encrypt.
+issuehost = ""
+# if issuestore is not empty, issued certificate will be stored in that directory.
+issuestore = ""
+NextProtos = ["http/1.1"]
+
+[[users]]
+username = "user1" # optional
+password = "password"
+quota = 100
+
+[[users]]
+username = "user2"
+password = "password2"
+# usage limitation (GB)
+quota = 1
