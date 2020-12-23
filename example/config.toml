@@ -2,6 +2,7 @@
 listen = "127.0.0.1:6666"
 # fallback remote address
 fallback = "127.0.0.1:80"
+PanelHost = "panel.example.org"
 
 [TLS]
 # certificate and private key files, leave empty and tls will not be enabled
@@ -16,7 +17,7 @@ NextProtos = ["http/1.1"]
 [[users]]
 username = "user1" # optional
 password = "password"
-quota = 100
+# quota = 100
 
 [[users]]
 username = "user2"
@@ -29,9 +30,9 @@ domain = "private"
 allow = false
 
 [[rules]]
-# allow baidu
-domain = "baidu"
-allow = true
+# drop a domain
+domain = "a-domain-is-not-allowed.com"
+allow = false
 
 [[rules]]
 # UDP rules, allow 8.8.8.8

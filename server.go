@@ -65,6 +65,10 @@ func serve(conn net.Conn) {
 
 	debug(ctx.String(conn.RemoteAddr().String()))
 
+	if ctx.Host == config.PanelHost {
+		handlePanel(conn, ctx)
+		return
+	}
 	if ctx.UDP {
 		handleUDP(conn, bufConn, &ctx)
 	} else {
@@ -186,6 +190,37 @@ func handleTCP(inbound net.Conn, bufConn *bufio.Reader, ctx *requestCTX) {
 	BufferPool.Put(buf)
 
 	_ = relay(inbound, outbound, ctx)
+}
+
+func handlePanel(inbound net.Conn, ctx requestCTX) {
+	msg := fmt.Sprintf("Welcome to wicktrojan panel! User [%v] ", ctx.Username)
+	if u, ok := users[ctx.Hex]; ok {
+		usageLock.RLock()
+		usage := formatUsage(u.Usage)
+		usageLock.RUnlock()
+		var quota string
+		if u.Quota > 0 {
+			quota = formatUsage(u.Quota)
+		} else {
+			quota = "INF"
+		}
+		msg += fmt.Sprintf("(%v/%v)", usage, quota)
+	}
+	msg = "HTTP/1.1 200 OK\r\nContent-Length:"+strconv.Itoa(len(msg))+"\r\n\r\n" + msg
+	debug(msg)
+	_, err := inbound.Write([]byte(msg))
+	debug(err)
+}
+
+func formatUsage(usage int64) string {
+	list := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
+	idx := 0
+	usageF := float64(usage)
+	for usageF > 1024.0 && idx <= 5 {
+		usageF = usageF / 1024.0
+		idx = idx + 1
+	}
+	return fmt.Sprintf("%.2f %v", usageF, list[idx])
 }
 
 func readCRLF(bufConn *bufio.Reader) ([]byte, error) {
