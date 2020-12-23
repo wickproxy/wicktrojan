@@ -34,18 +34,15 @@ func handleUDP(inbound net.Conn, bufConn *bufio.Reader, ctx *requestCTX) {
 			if n > 0 {
 				data, werr := packageUDP(buf[:n], host, port)
 				if werr != nil {
-					info("[udp]", werr)
 					break
 				}
 				nw, werr := inbound.Write(data)
 				if werr != nil {
-					info("[udp]", werr)
 					break
 				}
 				usage += int64(nw)
 			}
 			if rerr != nil {
-				info("[udp]", rerr)
 				break
 			}
 		}
@@ -67,7 +64,6 @@ func handleUDP(inbound net.Conn, bufConn *bufio.Reader, ctx *requestCTX) {
 		}
 		nw, err := outbound.WriteToUDP(payload, remoteAddr)
 		if err != nil {
-			info("[udp]", err)
 			break
 		}
 		usage += int64(nw)
@@ -107,36 +103,44 @@ func packageUDP(payload []byte, host, port string) ([]byte, error) {
 }
 
 func unpackageUDP(bufConn *bufio.Reader, ctx requestCTX) (payload []byte, remoteUDPAddr *net.UDPAddr, err error) {
-	request, err := readCRLF(bufConn)
+	var reqhost, reqport string
+	var reqlen int
+	var buf [300]byte
+
+	atype, err := bufConn.ReadByte()
 	if err != nil {
 		return payload, nil, err
 	}
-
-	var reqhost, reqport string
-	var reqlen int
-	switch request[0] {
+	switch atype {
 	case 0x01:
-		if len(request) < 9 {
+		n, err := bufConn.Read(buf[:10])
+		if err != nil || n != 10 {
 			return payload, nil, errors.New("parse IPv4 error")
 		}
-		reqhost = net.IPv4(request[1], request[2], request[3], request[4]).String()
-		reqport = strconv.Itoa(int(request[5])*256 + int(request[6]))
-		reqlen = int(request[7])*256 + int(request[8])
+		reqhost = net.IPv4(buf[0], buf[1], buf[2], buf[3]).String()
+		reqport = strconv.Itoa(int(buf[4])*256 + int(buf[5]))
+		reqlen = int(buf[6])*256 + int(buf[7])
 	case 0x03:
-		nd := int(request[1])
-		if len(request) < 6+nd {
+		nd, err := bufConn.ReadByte()
+		if err != nil {
 			return payload, nil, errors.New("parse domain error")
 		}
-		reqhost = string(request[2 : 2+nd])
-		reqport = strconv.Itoa(int(request[2+nd])*256 + int(request[3+nd]))
-		reqlen = int(request[4+nd])*256 + int(request[5+nd])
+		ndl := int(nd)
+		n, err := bufConn.Read(buf[:ndl+6])
+		if err != nil || n != ndl+6 {
+			return payload, nil, errors.New("parse domain error")
+		}
+		reqhost = string(buf[:ndl])
+		reqport = strconv.Itoa(int(buf[ndl])*256 + int(buf[ndl+1]))
+		reqlen = int(buf[ndl+2])*256 + int(buf[ndl+3])
 	case 0x04:
-		if len(request) < 21 {
+		n, err := bufConn.Read(buf[:22])
+		if err != nil || n != 22 {
 			return payload, nil, errors.New("parse IPv6 error")
 		}
-		reqhost = net.IP(request[1:17]).String()
-		reqport = strconv.Itoa(int(request[17])*256 + int(request[18]))
-		reqlen = int(request[19])*256 + int(request[20])
+		reqhost = net.IP(buf[:16]).String()
+		reqport = strconv.Itoa(int(buf[16])*256 + int(buf[17]))
+		reqlen = int(buf[18])*256 + int(buf[19])
 	default:
 		return payload, nil, errors.New("udp address type invalid")
 	}

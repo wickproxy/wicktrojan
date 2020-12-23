@@ -30,6 +30,7 @@ def test_udp(typ, addr, port, user=None, pwd=None):
         # Raw DNS request
         req = b"\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x05\x62\x61\x69\x64\x75\x03\x63\x6f\x6d\x00\x00\x01\x00\x01"
         s.sendto(req, ("202.38.64.56", 53))
+        # s.sendto(req, ("www.baidu.com",5353))
         (rsp, address)= s.recvfrom(4096)
         if rsp[0] == req[0] and rsp[1] == req[1]:
             print("UDP check passed")
