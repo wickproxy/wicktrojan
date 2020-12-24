@@ -13,7 +13,7 @@ import (
 )
 
 const mb int64 = 1024 * 1024
-const flushTimer = time.Second * 10
+const flushTimer = time.Second * 300
 
 var (
 	usageLock sync.RWMutex
