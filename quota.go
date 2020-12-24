@@ -13,7 +13,7 @@ import (
 )
 
 const mb int64 = 1024 * 1024
-const flushTimer = time.Second * 180
+const flushTimer = time.Second * 10
 
 var (
 	usageLock sync.RWMutex
@@ -41,7 +41,7 @@ func initUsers() {
 	if err == nil {
 		bufReader := bufio.NewReader(fp)
 		for {
-			strs,_, err := bufReader.ReadLine()
+			strs, _, err := bufReader.ReadLine()
 			if err != nil {
 				break
 			}
@@ -121,9 +121,7 @@ func storeUsage() {
 		bufWrtier := bufio.NewWriter(fp)
 		usageLock.RLock()
 		for _, u := range users {
-			if u.Quota > 0 {
-				bufWrtier.WriteString(fmt.Sprintf("%v %v\n", u.Hex, u.Usage))
-			}
+			bufWrtier.WriteString(fmt.Sprintf("%v %v\n", u.Hex, u.Usage))
 		}
 		bufWrtier.WriteString("\n")
 		usageLock.RUnlock()

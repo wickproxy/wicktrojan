@@ -28,9 +28,9 @@ type requestCTX struct {
 
 func (ctx requestCTX) String(from string) (msg string) {
 	if ctx.UDP {
-		msg = fmt.Sprintf("[UDP] %v->%v:%v (%v)", from, ctx.Host, ctx.Port, ctx.Username)
+		msg = fmt.Sprintf("[udp] %v->%v:%v (%v)", from, ctx.Host, ctx.Port, ctx.Username)
 	} else {
-		msg = fmt.Sprintf("[TCP] %v->%v:%v (%v)", from, ctx.Host, ctx.Port, ctx.Username)
+		msg = fmt.Sprintf("[tcp] %v->%v:%v (%v)", from, ctx.Host, ctx.Port, ctx.Username)
 	}
 	if ctx.SUsage > 0 {
 		msg += fmt.Sprintf(" Send: %v byte", ctx.SUsage)
@@ -63,7 +63,7 @@ func serve(conn net.Conn) {
 	}
 	conn.SetReadDeadline(time.Time{})
 
-	debug(ctx.String(conn.RemoteAddr().String()))
+	debug("[open]",ctx.String(conn.RemoteAddr().String()))
 
 	if ctx.Host == config.PanelHost {
 		handlePanel(conn, ctx)
