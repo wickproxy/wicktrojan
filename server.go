@@ -42,6 +42,14 @@ func (ctx requestCTX) String(from string) (msg string) {
 }
 
 func serve(conn net.Conn) {
+	if config.Websocket.Host == "" && config.Websocket.Path == "" {
+		serveTrojan(conn)
+	} else {
+		serveWebSocket(conn)
+	}
+}
+
+func serveTrojan(conn net.Conn) {
 	defer conn.Close()
 	var ctx requestCTX
 	var err error
@@ -49,9 +57,7 @@ func serve(conn net.Conn) {
 	conn.SetReadDeadline(time.Now().Add(readTimeout))
 	rewindConn := newRewindConn(conn, 2048)
 	bufConn := bufio.NewReader(rewindConn)
-	if err == nil {
-		ctx, err = handshake(bufConn)
-	}
+	ctx, err = handshake(bufConn)
 	rewindConn.StopBuffering()
 	if err != nil {
 		info("[server] request error:", err)
@@ -63,7 +69,7 @@ func serve(conn net.Conn) {
 	}
 	conn.SetReadDeadline(time.Time{})
 
-	debug("[open]",ctx.String(conn.RemoteAddr().String()))
+	debug("[open]", ctx.String(conn.RemoteAddr().String()))
 
 	if ctx.Host == config.PanelHost {
 		handlePanel(conn, ctx)

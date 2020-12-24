@@ -9,10 +9,15 @@ PanelHost = "panel.example.org"
 certificate = "build/localhost+2.pem"
 privatekey = "build/localhost+2-key.pem"
 # if issuehost is not empty, wickproxy will try to issue a certificate from Let's encrypt.
-issuehost = ""
+# issuehost = ""
 # if issuestore is not empty, issued certificate will be stored in that directory.
-issuestore = ""
+# issuestore = ""
 NextProtos = ["http/1.1"]
+
+# [Websocket]
+# Websocket mode
+# host = "127.0.0.1:6666"
+# path = "/wicktrojan"
 
 [[users]]
 username = "user1" # optional
@@ -29,32 +34,32 @@ quota = 1
 domain = "private"
 allow = false
 
-[[rules]]
-# drop a domain
-domain = "a-domain-is-not-allowed.com"
-allow = false
+# [[rules]]
+# # drop a domain
+# domain = "a-domain-is-not-allowed.com"
+# allow = false
 
-[[rules]]
-# UDP rules, allow 8.8.8.8
-UDP = true
-ip = "8.8.8.8"
-allow = true
+# [[rules]]
+# # UDP rules, allow 8.8.8.8
+# UDP = true
+# ip = "8.8.8.8"
+# allow = true
 
-[[rules]]
-# UDP rules, allow 8.8.8.8
-port = "1"
-allow = false
+# [[rules]]
+# # UDP rules, allow 8.8.8.8
+# port = "1"
+# allow = false
 
-[[rules]]
-# UDP rules, allow 8.8.8.8
-cidr = "192.168.0.0/16"
-allow = false
+# [[rules]]
+# # UDP rules, allow 8.8.8.8
+# cidr = "192.168.0.0/16"
+# allow = false
 
-[[rules]]
-# UDP rules, do not allow udp
-UDP = true
-allow = false
+# [[rules]]
+# # UDP rules, do not allow udp
+# UDP = true
+# allow = false
 
-[[rules]]
-# last rule, allow requests left
-allow = true
+# [[rules]]
+# # last rule, allow requests left
+# allow = true

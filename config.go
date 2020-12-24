@@ -26,6 +26,11 @@ type configPrototype struct {
 	}
 
 	Rules []rulePrototype
+
+	Websocket struct {
+		Path string
+		Host string
+	}
 }
 
 type rulePrototype struct {
