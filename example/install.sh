@@ -22,7 +22,7 @@ if [[ $(uname -m 2> /dev/null) != x86_64 ]]; then
 fi
 
 NAME=wicktrojan
-VERSION=$(curl -fsSL https://api.github.com/repos/wickproxy/trojan/releases/latest | grep tag_name | sed -E 's/.*"(.*)".*/\1/' )
+VERSION=$(curl -fsSL https://api.github.com/repos/wickproxy/wicktrojan/releases/latest | grep tag_name | sed -E 's/.*"(.*)".*/\1/' )
 FILENAME="wicktrojan-linux-amd64"
 DOWNLOADURL="https://github.com/wickproxy/wicktrojan/releases/download/$VERSION/$FILENAME"
 TMPDIR="$(mktemp -d)"
