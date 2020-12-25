@@ -2,6 +2,8 @@
 
 Wicktrojan is a trojan server that is written in Golang and is under `MIT License`.
 
+> **Notice: Wicktrojan is developed only for author's study and testing purposes, it is not as good as trojan-go**
+
 ## Features
 * UDP/TCP transportation
 * Websocket mode
