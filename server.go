@@ -33,10 +33,10 @@ func (ctx requestCTX) String(from string) (msg string) {
 		msg = fmt.Sprintf("[tcp] %v->%v:%v (%v)", from, ctx.Host, ctx.Port, ctx.Username)
 	}
 	if ctx.SUsage > 0 {
-		msg += fmt.Sprintf(" Send: %v byte", ctx.SUsage)
+		msg += fmt.Sprintf(" Send: %v ", formatUsage(ctx.SUsage))
 	}
 	if ctx.RUsage > 0 {
-		msg += fmt.Sprintf(" Recv: %v byte", ctx.RUsage)
+		msg += fmt.Sprintf(" Recv: %v ", formatUsage(ctx.RUsage))
 	}
 	return
 }

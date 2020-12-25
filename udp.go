@@ -151,7 +151,6 @@ func unpackageUDP(bufConn *bufio.Reader, ctx requestCTX) (payload []byte, remote
 		Port:     reqport,
 		UDP:      true,
 	}
-	debug(tmpCTX)
 	if !checkRules(tmpCTX) {
 		return payload, nil, errors.New("request is not allowed")
 	}
