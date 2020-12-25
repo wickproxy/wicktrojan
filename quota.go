@@ -37,23 +37,25 @@ func parseHex(password string) string {
 func initUsers() {
 
 	tmpStore := make(map[string]int64)
-	fp, err := os.Open(*usageFile)
-	if err == nil {
-		bufReader := bufio.NewReader(fp)
-		for {
-			strs, _, err := bufReader.ReadLine()
-			if err != nil {
-				break
-			}
-			raw := strings.Split(string(strs), " ")
-			if len(raw) == 2 {
-				if usageI, err := strconv.ParseInt(raw[1], 10, 64); err == nil {
-					tmpStore[raw[0]] = usageI
+	if *usageFile != "" {
+		fp, err := os.Open(*usageFile)
+		if err == nil {
+			bufReader := bufio.NewReader(fp)
+			for {
+				strs, _, err := bufReader.ReadLine()
+				if err != nil {
+					break
+				}
+				raw := strings.Split(string(strs), " ")
+				if len(raw) == 2 {
+					if usageI, err := strconv.ParseInt(raw[1], 10, 64); err == nil {
+						tmpStore[raw[0]] = usageI
+					}
 				}
 			}
 		}
+		fp.Close()
 	}
-	fp.Close()
 
 	users = make(map[string]userStruct)
 	for _, u := range config.Users {
@@ -73,7 +75,9 @@ func initUsers() {
 			Usage:    usage,
 		}
 	}
-	go storeUsage()
+	if *usageFile != "" {
+		go storeUsage()
+	}
 }
 
 func authenticate(reqhex string) (username string, ok bool) {

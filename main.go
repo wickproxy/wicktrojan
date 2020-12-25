@@ -18,8 +18,8 @@ var (
 	version     string
 	buildTime   string
 	debugFlag   = flag.Bool("debug", false, "enable debug mode")
-	usageFile   = flag.String("usage", "usage.db", "usage database")
-	loggingFile = flag.String("log", "", "log file")
+	usageFile   = flag.String("usage", "", "usage database, left empty and usage information will not be stored")
+	loggingFile = flag.String("log", "", "log file, left empty and use standard output")
 	configFile  = flag.String("config", "config.toml", "config file")
 	versionFlag = flag.Bool("version", false, "show version")
 )
