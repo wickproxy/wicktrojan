@@ -136,6 +136,8 @@ func listenAndServe() {
 			err = tlsConn.Handshake()
 			if err != nil {
 				info("[tls] tls handshake error:", err)
+				tlsConn.Close()
+				conn.Close()
 				continue
 			}
 			go serve(tlsConn)
