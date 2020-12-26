@@ -43,7 +43,7 @@ func main() {
 		if err != nil {
 			fatal("[log] can not open (or create) logging file:", err)
 		}
-		log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 		log.SetOutput(logWriter)
 	}
 	loadConfig()

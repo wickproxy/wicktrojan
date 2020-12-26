@@ -12,8 +12,11 @@ import (
 	"time"
 )
 
-const mb int64 = 1024 * 1024
-const flushTimer = time.Second * 300
+const (
+	mb         int64 = 1024 * 1024
+	gb         int64 = 1024 * 1024 * 1024
+	flushTimer       = time.Second * 300
+)
 
 var (
 	usageLock sync.RWMutex
@@ -71,7 +74,7 @@ func initUsers() {
 			Username: u.Username,
 			Password: u.Password,
 			Hex:      parseHex(u.Password),
-			Quota:    u.Quota * mb,
+			Quota:    u.Quota * gb,
 			Usage:    usage,
 		}
 	}

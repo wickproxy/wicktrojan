@@ -3,6 +3,7 @@ listen = "127.0.0.1:6666"
 # fallback remote address
 fallback = "127.0.0.1:80"
 PanelHost = "panel.example.org"
+usagefile = "/usr/local/etc/wicktrojan/usage.db"
 
 [TLS]
 # certificate and private key files, leave empty and tls will not be enabled

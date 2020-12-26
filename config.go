@@ -10,6 +10,7 @@ type configPrototype struct {
 	Listen    string
 	Fallback  string
 	PanelHost string
+	UsageFile string
 
 	TLS struct {
 		Certificate string
@@ -51,6 +52,9 @@ func loadConfig() {
 	debug("[config] reading config:", config)
 	if len(config.Users) <= 0 {
 		fatal("[config] at least one user should exist")
+	}
+	if config.UsageFile != "" {
+		usageFile = &config.UsageFile
 	}
 	initUsers()
 }
