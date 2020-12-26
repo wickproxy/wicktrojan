@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -61,7 +62,7 @@ func serveTrojan(conn net.Conn) {
 	rewindConn.StopBuffering()
 	if err != nil {
 		info("[server] request error:", err)
-		err = fallback(rewindConn)
+		err = fallback(rewindConn, conn)
 		if err != nil {
 			info("[fallback] ", err)
 		}
@@ -155,12 +156,24 @@ func handshake(bufConn *bufio.Reader) (ctx requestCTX, err error) {
 	return
 }
 
-func fallback(conn *rewindConn) error {
+func fallback(conn *rewindConn, rawConn net.Conn) error {
+
+	fallbackURL := config.Fallback
+	if config.H2Fallback != "" {
+		if tlsConn, ok := rawConn.(*tls.Conn); ok {
+			np := tlsConn.ConnectionState().NegotiatedProtocol
+			if np == "h2" {
+				fallbackURL = config.H2Fallback
+				debug("[fallback] redirect to http2 port:", fallbackURL)
+			}
+		}
+	}
+
 	if config.Fallback == "" {
 		return errors.New("fallback url is empty")
 	}
 
-	outbound, err := net.Dial("tcp", config.Fallback)
+	outbound, err := net.Dial("tcp", fallbackURL)
 	if err != nil {
 		return errors.New("fallback error: " + err.Error())
 	}

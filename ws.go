@@ -30,12 +30,12 @@ func serveWebSocket(conn net.Conn) {
 	rewindConn.StopBuffering()
 	if err != nil {
 		info("[websocket] parse http request error:", err)
-		fallback(rewindConn)
+		fallback(rewindConn, conn)
 		return
 	}
 	if strings.ToLower(req.Header.Get("Upgrade")) != "websocket" || req.URL.Path != config.Websocket.Path {
 		info("[websocket] url is not match:", err)
-		fallback(rewindConn)
+		fallback(rewindConn, conn)
 		return
 	}
 

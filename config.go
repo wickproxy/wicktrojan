@@ -8,9 +8,11 @@ var config *configPrototype
 
 type configPrototype struct {
 	Listen    string
-	Fallback  string
 	PanelHost string
 	UsageFile string
+
+	Fallback   string
+	H2Fallback string
 
 	TLS struct {
 		Certificate string
