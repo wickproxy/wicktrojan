@@ -86,6 +86,22 @@ func serveTrojan(conn net.Conn) {
 	updateUsage(ctx)
 }
 
+
+func serveTLS(conn net.Conn, tlsConfig *tls.Config) {
+	defer conn.Close()
+	tlsConn := tls.Server(conn, tlsConfig)
+	defer tlsConn.Close()
+
+	tlsConn.SetReadDeadline(time.Now().Add(10 * time.Second))
+	err := tlsConn.Handshake()
+	tlsConn.SetReadDeadline(time.Time{})
+	if err != nil {
+		info("[tls] tls handshake error:", err)
+		return
+	}
+	serve(tlsConn)
+}
+
 func handshake(bufConn *bufio.Reader) (ctx requestCTX, err error) {
 	hex, err := bufConn.ReadString('\n')
 	if err != nil {

@@ -132,17 +132,7 @@ func listenAndServe() {
 		tempDelay = 0
 
 		if tlsUsed {
-			tlsConn := tls.Server(conn, tlsConfig)
-			tlsConn.SetReadDeadline(time.Now().Add(10 * time.Second))
-			err = tlsConn.Handshake()
-			tlsConn.SetReadDeadline(time.Time{})
-			if err != nil {
-				info("[tls] tls handshake error:", err)
-				tlsConn.Close()
-				conn.Close()
-				continue
-			}
-			go serve(tlsConn)
+			go serveTLS(conn, tlsConfig)
 		} else {
 			go serve(conn)
 		}
