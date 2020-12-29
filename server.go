@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	readTimeout time.Duration = 30 * time.Second
-	udpTimeout                = 60 * time.Second
-	tcpTimeout                = 120 * time.Second
+	tlsTimeout  = 10 * time.Second
+	readTimeout = 30 * time.Second
+	udpTimeout  = 60 * time.Second
+	tcpTimeout  = 120 * time.Second
 )
 
 type requestCTX struct {
@@ -86,13 +87,12 @@ func serveTrojan(conn net.Conn) {
 	updateUsage(ctx)
 }
 
-
 func serveTLS(conn net.Conn, tlsConfig *tls.Config) {
 	defer conn.Close()
 	tlsConn := tls.Server(conn, tlsConfig)
 	defer tlsConn.Close()
 
-	tlsConn.SetReadDeadline(time.Now().Add(10 * time.Second))
+	tlsConn.SetReadDeadline(time.Now().Add(tlsTimeout))
 	err := tlsConn.Handshake()
 	tlsConn.SetReadDeadline(time.Time{})
 	if err != nil {
@@ -247,7 +247,7 @@ func handlePanel(inbound net.Conn, ctx requestCTX) {
 		} else {
 			quota = "INF"
 		}
-		msg += fmt.Sprintf("(%v/%v)", usage, quota)
+		msg += fmt.Sprintf("<p>(%v/%v)</p>", usage, quota)
 	}
 	msg = "HTTP/1.1 200 OK\r\nContent-Length:" + strconv.Itoa(len(msg)) + "\r\n\r\n" + msg
 	inbound.Write([]byte(msg))

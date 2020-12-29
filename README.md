@@ -17,12 +17,15 @@ Wicktrojan is a trojan server that is written in Golang and is under `MIT Licens
 
 via curl
 ```
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/wickproxy/wicktrojan/main/example/install.sh)"
+sudo bash -c "$(curl -fsSL https://git.io/JLS9v)"
 ```
 via wget
 ```
-sudo bash -c "$(wget -O- https://raw.githubusercontent.com/wickproxy/wicktroja/main/example/install.sh)"
+sudo bash -c "$(wget -O- https://git.io/JLS9v)"
 ```
+<!--
+https://raw.githubusercontent.com/wickproxy/wicktroja/main/example/install.sh
+-->
 
 Or download binary manually from: [Release Page](https://github.com/wickproxy/wicktrojan/releases)
 
