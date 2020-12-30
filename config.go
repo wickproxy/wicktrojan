@@ -26,6 +26,7 @@ type configPrototype struct {
 		Username string
 		Password string
 		Quota    int64
+		Admin    bool
 	}
 
 	Rules []rulePrototype

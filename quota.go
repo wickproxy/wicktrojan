@@ -28,6 +28,7 @@ type userStruct struct {
 	Password string `json:"-"`
 	Quota    int64  `json:"-"`
 	Usage    int64  `json:"usage"`
+	Admin    bool   `json:"-"`
 }
 
 var users map[string]userStruct
@@ -76,6 +77,7 @@ func initUsers() {
 			Hex:      parseHex(u.Password),
 			Quota:    u.Quota * gb,
 			Usage:    usage,
+			Admin:    u.Admin,
 		}
 	}
 	if *usageFile != "" {

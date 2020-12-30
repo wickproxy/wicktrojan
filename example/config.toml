@@ -24,6 +24,7 @@ NextProtos = ["h2","http/1.1"]
 [[users]]
 username = "user1" # optional
 password = "password"
+admin = true
 # quota = 100
 
 [[users]]

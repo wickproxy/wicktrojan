@@ -236,7 +236,7 @@ func handleTCP(inbound net.Conn, bufConn *bufio.Reader, ctx *requestCTX) {
 }
 
 func handlePanel(inbound net.Conn, ctx requestCTX) {
-	msg := fmt.Sprintf("Welcome to wicktrojan panel! User [%v] ", ctx.Username)
+	msg := fmt.Sprintf("<html><body><p>Welcome to wicktrojan panel! User [%v] ", ctx.Username)
 	if u, ok := users[ctx.Hex]; ok {
 		usageLock.RLock()
 		usage := formatUsage(u.Usage)
@@ -247,9 +247,21 @@ func handlePanel(inbound net.Conn, ctx requestCTX) {
 		} else {
 			quota = "INF"
 		}
-		msg += fmt.Sprintf("<p>(%v/%v)</p>", usage, quota)
+		msg += fmt.Sprintf("(%v/%v)</p>", usage, quota)
+
+		if u.Admin {
+			for _, ui := range users {
+				uiName := ui.Username
+				uiQuota := formatUsage(ui.Quota)
+				usageLock.RLock()
+				uiUsage := formatUsage(ui.Usage)
+				usageLock.RUnlock()
+				msg += fmt.Sprintf("<p>%v: %v/%v</p>", uiName, uiUsage, uiQuota)
+			}
+		}
 	}
-	msg = "HTTP/1.1 200 OK\r\nContent-Length:" + strconv.Itoa(len(msg)) + "\r\n\r\n" + msg
+	msg += "</body></html>"
+	msg = "HTTP/1.1 200 OK\r\nContent-Type:text/html; charset=UTF-8\r\nContent-Length:" + strconv.Itoa(len(msg)) + "\r\n\r\n" + msg
 	inbound.Write([]byte(msg))
 }
 
