@@ -33,6 +33,7 @@ SYSTEMDPREFIX=/etc/systemd/system
 BINARYPATH="$INSTALLPREFIX/bin/$NAME"
 CONFIGPATH="$INSTALLPREFIX/etc/$NAME/config.toml"
 SYSTEMDPATH="$SYSTEMDPREFIX/$NAME.service"
+SYSTEMDPATHTPL="$SYSTEMDPREFIX/$NAME@.service"
 
 echo Entering temp directory $TMPDIR...
 cd "$TMPDIR"
@@ -57,6 +58,16 @@ if [[ -d "$SYSTEMDPREFIX" ]]; then
     if ! [[ -f "$SYSTEMDPATH" ]] || prompt "The systemd service already exists in $SYSTEMDPATH, overwrite?"; then
         curl -LO --progress-bar "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan.service" || wget -q --show-progress "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan.service"
         install -Dm644 wicktrojan.service "$SYSTEMDPATH"
+        echo Reloading systemd daemon...
+        systemctl daemon-reload
+    else
+        echo Skipping installing $NAME systemd service...
+    fi
+
+    echo Installing $NAME systemd service template to $SYSTEMDPATH...
+    if ! [[ -f "$SYSTEMDPATHTPL" ]] || prompt "The systemd service already exists in $SYSTEMDPATH, overwrite?"; then
+        curl -LO --progress-bar "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan@.service" || wget -q --show-progress "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan@.service"
+        install -Dm644 wicktrojan@.service "$SYSTEMDPATH"
         echo Reloading systemd daemon...
         systemctl daemon-reload
     else
