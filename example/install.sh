@@ -65,8 +65,8 @@ if [[ -d "$SYSTEMDPREFIX" ]]; then
     fi
 
     echo Installing $NAME systemd service template to $SYSTEMDPATH...
-    if ! [[ -f "$SYSTEMDPATHTPL" ]] || prompt "The systemd service already exists in $SYSTEMDPATH, overwrite?"; then
-        curl -LO --progress-bar "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan@.service" || wget -q --show-progress "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan@.service"
+    if ! [[ -f "$SYSTEMDPATHTPL" ]] || prompt "The systemd service template already exists in $SYSTEMDPATH, overwrite?"; then
+        curl -LO --progress-bar "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan%40.service" || wget -q --show-progress "https://raw.githubusercontent.com/wickproxy/wicktrojan/$VERSION/example/wicktrojan%40.service"
         install -Dm644 wicktrojan@.service "$SYSTEMDPATH"
         echo Reloading systemd daemon...
         systemctl daemon-reload
