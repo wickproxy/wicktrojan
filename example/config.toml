@@ -1,15 +1,16 @@
 # listen address
-listen = "127.0.0.1:6666"
+listen = "0.0.0.0:443"
 # fallback remote address
 fallback = "127.0.0.1:80"
 h2fallback = "127.0.0.1:81"
 PanelHost = "panel.example.org"
 usagefile = "/usr/local/etc/wicktrojan/usage.db"
+reshape = true
 
 [TLS]
 # certificate and private key files, leave empty and tls will not be enabled
-certificate = "build/localhost+2.pem"
-privatekey = "build/localhost+2-key.pem"
+certificate = ""
+privatekey = ""
 # if issuehost is not empty, wickproxy will try to issue a certificate from Let's encrypt.
 # issuehost = ""
 # if issuestore is not empty, issued certificate will be stored in that directory.

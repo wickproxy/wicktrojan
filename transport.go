@@ -20,24 +20,31 @@ type closeWriter interface {
 	CloseWrite() error
 }
 
-func relay(leftConn, rightConn net.Conn, ctx *requestCTX) int64 {
+func relay(inbound, outbound net.Conn, ctx *requestCTX) int64 {
 	ch := make(chan error)
 
 	go func() {
 		buf := BufferPool.Get().([]byte)
 		buf = buf[0:cap(buf)]
-		nr, err := io.CopyBuffer(rightConn, leftConn, buf)
+		nr, err := io.CopyBuffer(outbound, inbound, buf)
 		BufferPool.Put(buf)
-		rightConn.SetReadDeadline(time.Now())
+		outbound.SetReadDeadline(time.Now())
 		ctx.SUsage = nr
 		ch <- err
 	}()
 
 	buf := BufferPool.Get().([]byte)
 	buf = buf[0:cap(buf)]
-	n, _ := io.CopyBuffer(leftConn, rightConn, buf)
+	var n int64
+	if config.Reshape {
+		sw := shapeWriter{}
+		sw.init(inbound)
+		n, _ = io.CopyBuffer(sw, outbound, buf)
+	} else {
+		n, _ = io.CopyBuffer(inbound, outbound, buf)
+	}
 	BufferPool.Put(buf)
-	leftConn.SetReadDeadline(time.Now())
+	inbound.SetReadDeadline(time.Now())
 	ctx.RUsage = n
 	<-ch
 	return n

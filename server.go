@@ -204,7 +204,7 @@ func fallback(conn *rewindConn, rawConn net.Conn) error {
 		return errors.New("fallback error: " + err.Error())
 	}
 	outbound.Write(buf[:n])
-	relay(outbound, conn, &requestCTX{})
+	relay(conn, outbound, &requestCTX{})
 	return nil
 }
 

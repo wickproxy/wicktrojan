@@ -10,6 +10,7 @@ type configPrototype struct {
 	Listen    string
 	PanelHost string
 	UsageFile string
+	Reshape   bool
 
 	Fallback   string
 	H2Fallback string
@@ -60,4 +61,7 @@ func loadConfig() {
 		usageFile = &config.UsageFile
 	}
 	initUsers()
+	if config.Reshape {
+		initShape()
+	}
 }

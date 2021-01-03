@@ -5,9 +5,10 @@ Wicktrojan is a trojan server that is written in Golang and is under `MIT Licens
 > **Notice: Wicktrojan is developed only for author's study and testing purposes, it is not as good as trojan-go**
 
 ## Features
-* **HTTP2 Fallback**
-* **Websocket mode**, same as trojan-go
-* UDP/TCP transportation
+* **HTTP2 Fallback**.
+* **Flow shaping**. Fuzzy traffic characteristics but compact with trojan. However, it may produce more characteristics (such as more packets)
+* **Websocket mode**. same as trojan-go
+* **UDP transportation (full cone mode)**
 * with or without transport layer security
 * automatic certificates issue
 * One script to install on linux amd64 machiens (see `Install`)
